@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMD Style Interface</title>
+  <!-- Bootstrap CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      background-color: #000;
+      color: #0f0;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    .terminal-window {
+      border: 1px solid #0f0;
+      border-radius: 5px;
+      padding: 20px;
+      margin: 50px auto;
+      width: 90%;
+      max-width: 900px;
+      background-color: #111;
+      box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+    }
+    .prompt {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .input-line {
+      display: flex;
+      align-items: center;
+    }
+    .input-line span {
+      margin-right: 5px;
+    }
+    .terminal-content {
+      min-height: 400px;
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+    a {
+      color: #0f0;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid d-flex align-items-center justify-content-center vh-100">
+  <div class="terminal-window">
+    <div class="terminal-content">
+      <p class="prompt">C:\Users\User&gt; Welcome to the terminal</p>
+      <p class="prompt">C:\Users\User&gt; Please enter your first name:</p>
+    </div>
+
+    <div class="input-line">
+      <span>C:\Users\\User&gt;</span>
+      <input type="text" placeholder="First Name" class="form-control bg-dark text-success border-0" id="cmd-input" autofocus>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  let step = 1; // Step counter
+  let userName = ''; // Store user's name
+  let moodleId = ''; // Store user's Moodle ID
+
+  document.getElementById("cmd-input").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+      const inputValue = event.target.value.trim();
+      const terminalContent = document.querySelector(".terminal-content");
+
+      // Add new line with the command
+      const newPrompt = document.createElement("p");
+      newPrompt.classList.add("prompt");
+      newPrompt.textContent = "C:\\Users\\User> " + inputValue;
+      terminalContent.appendChild(newPrompt);
+
+      // Clear input field
+      event.target.value = "";
+
+      // Handle different steps
+      if (step === 1) {
+        // Get user's name
+        userName = inputValue;
+        const namePrompt = document.createElement("p");
+        namePrompt.classList.add("prompt");
+        namePrompt.textContent = "C:\\Users\\User> Please enter your Moodle ID:";
+        terminalContent.appendChild(namePrompt);
+        step++;
+      } else if (step === 2) {
+        // Get Moodle ID
+        moodleId = inputValue;
+        const moodlePrompt = document.createElement("p");
+        moodlePrompt.classList.add("prompt");
+        moodlePrompt.textContent = "C:\\Users\\User> Please enter the experiment number:";
+        terminalContent.appendChild(moodlePrompt);
+        step++;
+      } else if (step === 3) {
+        // Get experiment number and generate the PDF
+        const experimentNumber = inputValue;
+        if (isNaN(experimentNumber) || experimentNumber === "") {
+          const errorPrompt = document.createElement("p");
+          errorPrompt.classList.add("prompt");
+          errorPrompt.textContent = "Invalid experiment number. Please enter a valid number.";
+          terminalContent.appendChild(errorPrompt);
+        } else {
+          // Generate the PDF with the header and existing content
+          generatePDF(userName, moodleId, experimentNumber);
+
+          // Reset input flow
+          step = 1;
+          const resetPrompt = document.createElement("p");
+          resetPrompt.classList.add("prompt");
+          resetPrompt.textContent = "C:\\Users\\User> Welcome to the terminal. Please enter your first name:";
+          terminalContent.appendChild(resetPrompt);
+        }
+
+        // Scroll to bottom
+        terminalContent.scrollTop = terminalContent.scrollHeight;
+      }
+    }
+  });
+
+  function generatePDF(name, moodleId, experimentNumber) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Add header images
+    const leftLogo = new Image();
+    const rightLogo = new Image();
+    leftLogo.src = 'apsit.png'; // Replace with the actual path to the image
+    rightLogo.src = 'dsa.png';  // Replace with the actual path to the image
+
+    let imagesLoaded = 0;
+
+    function checkIfImagesLoaded() {
+      imagesLoaded++;
+      if (imagesLoaded === 2) {
+        // Both images are loaded, proceed with PDF generation
+        createPDF(doc, leftLogo, rightLogo, name, moodleId, experimentNumber);
+      }
+    }
+
+    leftLogo.onload = checkIfImagesLoaded;
+    rightLogo.onload = checkIfImagesLoaded;
+  }
+
+  function createPDF(doc, leftLogo, rightLogo, name, moodleId, experimentNumber) {
+    // First page: Insert the custom design (header with student's details)
+    doc.addImage(leftLogo, 'PNG', 10, 10, 30, 30);
+    doc.addImage(rightLogo, 'PNG', 170, 10, 30, 30);
+
+    // Title
+    doc.setFontSize(12);
+    doc.text("PARSHWANATH CHARITABLE TRUST'S", 105, 20, null, null, 'center');
+    doc.text("A.P. SHAH INSTITUTE OF TECHNOLOGY", 105, 30, null, null, 'center');
+    doc.text("Department of Computer Science and Engineering", 105, 40, null, null, 'center');
+    doc.text("Data Science", 105, 50, null, null, 'center');
+
+    // Table with details
+    doc.setFontSize(10);
+    doc.text(`Academic Year: 2024-2025`, 20, 70);
+    doc.text(`Name of Student: ${name}`, 120, 70);
+
+    doc.text(`Semester: V`, 20, 80);
+    doc.text(`Student ID: ${moodleId}`, 120, 80);
+
+    doc.text(`Class / Branch: TE/CSE-DS`, 20, 90);
+    doc.text(`Date Of Performance: 21/10/24`, 120, 90);
+
+    doc.text(`Subject: Artificial Intelligence Lab`, 20, 100);
+    doc.text(`Date Of Submission: 21/10/24`, 120, 100);
+
+    doc.text(`Name of Instructor: Prof. Sarala Mary`, 20, 110);
+
+    // Now continue with the experiment data (second page or following the header)
+    doc.addPage(); // Add a new page for experiment details
+
+    // Example content for the experiment (replace this with actual content)
+    doc.setFontSize(12);
+    doc.text(`Experiment ${experimentNumber} Details`, 20, 20);
+    doc.text(`Here you can add the experiment data or content`, 20, 30);
+
+    // Save the generated PDF
+    doc.save(`exp-${experimentNumber}-${name}.pdf`);
+  }
+</script>
+
+</body>
+</html>

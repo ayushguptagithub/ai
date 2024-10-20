@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Experiment Report</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      width: 80%;
+      margin: 0 auto;
+      /* border: 1px solid #000; */
+      padding: 20px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header img {
+      width: 100px;
+    }
+    .institute-name {
+      text-align: center;
+      font-size: 1.2em;
+    }
+    .details {
+      margin-top: 20px;
+      border-top: 2px solid #000;
+      padding-top: 10px;
+      border-bottom:2px solid black ;
+    }
+    .details table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .details table td {
+      padding: 10px;
+    }
+    .footer {
+      margin-top: 20px;
+      border-top: 1px solid #000;
+      padding-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="apsit.png" alt="Left Logo">
+      <div class="institute-name">
+        <strong>PARSHWANATH CHARITABLE TRUST'S</strong><br>
+        A.P. SHAH INSTITUTE OF TECHNOLOGY<br>
+        <small>Department of Computer Science and Engineering<br>Data Science</small>
+      </div>
+      <img src="dsa.png" alt="Right Logo">
+    </div>
+
+    <div class="details">
+      <table>
+        <tr>
+          <td><strong>Academic Year:</strong> 2024-2025</td>
+          <td><strong>Name of Student:</strong> {name}</td>
+        </tr>
+        <tr>
+          <td><strong>Semester:</strong> V</td>
+          <td><strong>Student ID:</strong> {moodle}</td>
+        </tr>
+        <tr>
+          <td><strong>Class / Branch:</strong> TE/CSE-DS</td>
+          <td><strong>Date Of Performance:</strong> 21/10/24</td>
+        </tr>
+        <tr>
+          <td><strong>Subject:</strong> Artificial Intelligence Lab</td>
+          <td><strong>Date Of Submission:</strong> 21/10/24</td>
+        </tr>
+        <tr>
+          <td><strong>Name of Instructor:</strong> Prof. Sarala Mary</td>
+        </tr>
+      </table>
+    </div>
+
+    
+
+
+    
+  </div>
+
+  <!-- jsPDF library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const { jsPDF } = window.jspdf;
+
+    // Function to download PDF
+    function downloadPDF() {
+      const doc = new jsPDF();
+      doc.html(document.body, {
+        callback: function (doc) {
+          doc.save('report.pdf');
+        },
+        x: 10,
+        y: 10,
+        width: 190, // For A4 size paper
+      });
+    }
+
+    // Trigger the download
+    downloadPDF();
+  </script>
+</body>
+</html>
