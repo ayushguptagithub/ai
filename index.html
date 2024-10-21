@@ -19,25 +19,12 @@
       border: 1px solid #0f0;
       border-radius: 5px;
       padding: 20px;
-      margin: auto;
+      margin: 50px auto;
       width: 90%;
       max-width: 900px;
       background-color: #111;
       box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
-      position: relative;
-      z-index: 1; /* Ensure it appears above the overlay */
-    }
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(0, 0, 0, 0.8); /* Dark overlay */
-      z-index: 0; /* Under the terminal window */
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      display: none; /* Hide terminal initially */
     }
     .prompt {
       display: block;
@@ -56,6 +43,24 @@
       overflow-y: auto;
       padding-right: 10px;
     }
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.8); /* Dark overlay */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10; /* Above all other content */
+    }
+    .password-prompt {
+      background-color: #222;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+    }
     a {
       color: #0f0;
       text-decoration: none;
@@ -67,68 +72,83 @@
 </head>
 <body>
 
+<!-- Overlay for password prompt -->
 <div class="overlay" id="overlay">
-  <div class="container-fluid d-flex align-items-center justify-content-center vh-100">
-    <div class="terminal-window">
-      <div class="terminal-content">
-        <p class="prompt">C:\Users\User&gt; Welcome to the terminal</p>
-        <p class="prompt">C:\Users\User&gt; Please enter your first name:</p>
-      </div>
+  <div class="password-prompt">
+    <p style="color: white;">Please enter the password:</p>
+    <input type="password" id="password-input" class="form-control" autofocus>
+  </div>
+</div>
 
-      <div class="input-line">
-        <span>C:\Users\User&gt;</span>
-        <input type="text" placeholder="First Name" class="form-control bg-dark text-success border-0" id="cmd-input" autofocus>
-      </div>
+<!-- Terminal Interface -->
+<div class="container-fluid d-flex align-items-center justify-content-center vh-100">
+  <div class="terminal-window">
+    <div class="terminal-content">
+      <p class="prompt">C:\Users\User&gt; Welcome to the terminal</p>
+      <p class="prompt">C:\Users\User&gt; Type the experiment number to download the PDF</p>
+      <p class="prompt">C:\Users\User&gt; dir</p>
+      <p class="prompt"> Volume in drive C has no label.</p>
+      <p class="prompt"> Directory of C:\Users\User</p>
+      <p class="prompt"> 10/19/2024  08:25 AM    &lt;DIR&gt;          .</p>
+      <p class="prompt"> 10/19/2024  08:25 AM    &lt;DIR&gt;          ..</p>
+      <p class="prompt"> 10/19/2024  08:25 AM    &lt;DIR&gt;Exp 1 : Case study on building data warehouse. Write detailed problem statement and design dimensional modeling</p>
+      <p class="prompt"> 10/19/2024  08:25 AM    &lt;DIR&gt;Exp 2 :  To implement simple programs using PROLOG as an AI programming Language</p>
+      <p class="prompt"> 10/19/2024  08:25 AM    &lt;DIR&gt;Exp 3 :   To implement 8 puzzle problem using heuristic technique in python</p>
+      <p class="prompt"> 10/19/2024  08:25 AM    &lt;DIR&gt;Exp 4 :    To implement A* algorithm using python for the given graph.</p>
+      <p class="prompt"> 10/19/2024  08:25 AM    &lt;DIR&gt;Exp 5 :   To perform adversarial search using Minmax Algorithm in python</p>
+      <p class="prompt"> 10/19/2024  08:25 AM    &lt;DIR&gt;Exp 6 :   To perform local search techniques using Hill Climbing Algorithm in python.</p>
+      <p class="prompt"> 10/19/2024  08:25 AM    &lt;DIR&gt;Exp 7 :   To implement forwardchaining algorithm using python.</p>
+      <p class="prompt"> 10/19/2024  08:25 AM    &lt;DIR&gt;Exp 8 :    To implement backwardchaining algorithm using python.</p>
+      <p class="prompt"> 10/19/2024  08:25 AM    &lt;DIR&gt;Exp 9 :   To implement a bot using python </p>
+      <p class="prompt"> 10/19/2024  08:25 AM    &lt;DIR&gt;Exp 10 :    To implement a Bayesian Network using python.</p>
+      <p class="prompt"> 10/19/2024  08:25 AM    &lt;DIR&gt;          Which experiment number?</p>
+    </div>
+
+    <div class="input-line">
+      <span>C:\Users\User&gt;</span>
+      <input type="text" placeholder="eg. 7" class="form-control bg-dark text-success border-0" id="cmd-input" autofocus>
     </div>
   </div>
 </div>
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script>
-  let step = 1; // Step counter
-  let userName = ''; // Store user's name
-  let moodleId = ''; // Store user's Moodle ID
-  const password = 'home'; // Set your password here
-  const inactivityTime = 60000; // Time in milliseconds (e.g., 60000ms = 60s)
-  let inactivityTimer;
-  document.getElementById("overlay").style.display = "none"; 
-  // Function to check password
-  function checkPassword() {
-    const inputPassword = prompt("Please enter the password:");
-    if (inputPassword !== password) {
-      alert("Incorrect password. Access denied.");
-      document.getElementById("overlay").style.display = "none"; 
-      window.location.reload(); // Reload the page if the password is incorrect
-      
-    } else {
-      document.getElementById("overlay").style.display = "block"; // Hide the overlay on successful password entry
+  const correctPassword = 'home'; // Set your password here
+  const overlay = document.getElementById('overlay');
+  const passwordInput = document.getElementById('password-input');
+  const terminalWindow = document.querySelector('.terminal-window');
+
+  // Function to handle password input
+  function handlePasswordInput(event) {
+    if (event.key === 'Enter') {
+      if (passwordInput.value === correctPassword) {
+        overlay.style.display = 'none'; // Hide the overlay
+        terminalWindow.style.display = 'block'; // Show the terminal
+      } else {
+        const terminalContent = document.querySelector(".terminal-content");
+        const errorPrompt = document.createElement("p");
+        errorPrompt.classList.add("prompt");
+        errorPrompt.textContent = "C:\\Users\\User> Incorrect password. Please try again.";
+        terminalContent.appendChild(errorPrompt);
+        passwordInput.value = ''; // Clear input
+      }
     }
   }
 
-  // Prompt for password on load
-  window.onload = checkPassword;
+  // Show password prompt on load
+  window.onload = function() {
+    overlay.style.display = 'flex'; // Show the overlay
+    passwordInput.focus(); // Focus on password input
+    passwordInput.addEventListener('keypress', handlePasswordInput);
+  };
 
-  // Reset inactivity timer
-  function resetInactivityTimer() {
-    clearTimeout(inactivityTimer);
-    inactivityTimer = setTimeout(checkPassword, inactivityTime);
-  }
-
-  // Event listeners to reset inactivity timer
-  window.addEventListener('mousemove', resetInactivityTimer);
-  window.addEventListener('keypress', resetInactivityTimer);
-  window.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'visible') {
-      checkPassword();
-    }
-  });
-
-  document.getElementById("cmd-input").addEventListener("keypress", async function(event) {
+  // Command input handling
+  document.getElementById("cmd-input").addEventListener("keypress", function(event) {
     if (event.key === "Enter") {
       const inputValue = event.target.value.trim();
       const terminalContent = document.querySelector(".terminal-content");
+      const experimentNumber = `exp-${inputValue}.pdf`; // PDF file format
 
       // Add new line with the command
       const newPrompt = document.createElement("p");
@@ -139,73 +159,28 @@
       // Clear input field
       event.target.value = "";
 
-      // Handle different steps
-      if (step === 1) {
-        // Get user's name
-        userName = inputValue;
-        const namePrompt = document.createElement("p");
-        namePrompt.classList.add("prompt");
-        namePrompt.textContent = "C:\\Users\\User> Please enter your Moodle ID:";
-        terminalContent.appendChild(namePrompt);
-        step++;
-      } else if (step === 2) {
-        // Get Moodle ID
-        moodleId = inputValue;
-        const moodlePrompt = document.createElement("p");
-        moodlePrompt.classList.add("prompt");
-        moodlePrompt.textContent = "C:\\Users\\User> Please enter the experiment number:";
-        terminalContent.appendChild(moodlePrompt);
-        step++;
-      } else if (step === 3) {
-        // Get experiment number and download the PDF
-        const experimentNumber = inputValue;
-        if (isNaN(experimentNumber) || experimentNumber === "") {
-          const errorPrompt = document.createElement("p");
-          errorPrompt.classList.add("prompt");
-          errorPrompt.textContent = "Invalid experiment number. Please enter a valid number.";
-          terminalContent.appendChild(errorPrompt);
-        } else {
-          // Download and modify the PDF
-          const experimentFileName = `exp-${experimentNumber}.pdf`;
+      // Check if input is a number and valid
+      if (isNaN(inputValue) || inputValue === "") {
+        const errorPrompt = document.createElement("p");
+        errorPrompt.classList.add("prompt");
+        errorPrompt.textContent = "Invalid experiment number. Please enter a valid number.";
+        terminalContent.appendChild(errorPrompt);
+      } else {
+        // Generate the download link and append it to the terminal
+        const downloadLink = document.createElement("a");
+        downloadLink.href = `./pdfs/${experimentNumber}`; // Assuming PDF files are stored in the 'pdfs' directory
+        downloadLink.download = experimentNumber;
+        downloadLink.textContent = `Download ${experimentNumber}`;
+        terminalContent.appendChild(downloadLink);
 
-          // Simulate PDF modification
-          const pdfUrl = `./pdfs/${experimentFileName}`;
-          const modifiedPdf = await modifyPdf(pdfUrl, userName, moodleId);
-
-          // Trigger download
-          const downloadLink = document.createElement("a");
-          downloadLink.href = URL.createObjectURL(modifiedPdf);
-          downloadLink.download = `exp-${experimentNumber}-${userName}.pdf`;
-          downloadLink.textContent = `Download exp-${experimentNumber}-${userName}.pdf`;
-          terminalContent.appendChild(downloadLink);
-
-          // Simulate clicking the link to trigger download
-          downloadLink.click();
-        }
-
-        // Reset input flow
-        step = 1;
-        const resetPrompt = document.createElement("p");
-        resetPrompt.classList.add("prompt");
-        resetPrompt.textContent = "C:\\Users\\User> Welcome to the terminal. Please enter your first name:";
-        terminalContent.appendChild(resetPrompt);
+        // Simulate clicking the link to trigger download
+        downloadLink.click();
       }
 
       // Scroll to bottom
       terminalContent.scrollTop = terminalContent.scrollHeight;
     }
   });
-
-  async function modifyPdf(url, name, moodleId) {
-    const existingPdfBytes = await fetch(url).then(res => res.arrayBuffer());
-    const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
-    const pages = pdfDoc.getPages();
-    const firstPage = pages[0];
-
-    // Serialize the PDF document to bytes (a Uint8Array)
-    const pdfBytes = await pdfDoc.save();
-    return new Blob([pdfBytes], { type: "application/pdf" });
-  }
 </script>
 
 </body>
